@@ -105,7 +105,7 @@ const AnalyzerTool = () => {
           <h2 className="text-2xl font-bold text-foreground mb-1">Link Analyzer</h2>
           <p className="text-muted-foreground text-sm mb-6">Paste a suspicious URL to check for visual impersonation</p>
 
-          <div className="flex items-center gap-2 bg-secondary rounded-lg p-1 mb-4">
+          <div className="flex items-center gap-2 bg-muted rounded-2xl border-2 border-border p-1 mb-4">
             <span className="pl-3 text-muted-foreground">🔒</span>
             <input
               type="text"
@@ -133,7 +133,7 @@ const AnalyzerTool = () => {
           <button
             onClick={runAnalysis}
             disabled={isAnalyzing || !url.trim()}
-            className="w-full py-3 rounded-lg bg-primary text-primary-foreground font-semibold relative overflow-hidden disabled:opacity-50 transition-opacity"
+            className="w-full py-3 rounded-2xl bg-primary text-primary-foreground font-bold border-2 border-border shadow-[4px_4px_0px_0px_hsl(var(--border))] hover:shadow-[2px_2px_0px_0px_hsl(var(--border))] hover:translate-x-0.5 hover:translate-y-0.5 relative overflow-hidden disabled:opacity-50 transition-all"
           >
             {isAnalyzing ? 'ANALYZING...' : 'ANALYZE LINK'}
             {!isAnalyzing && (
@@ -143,7 +143,7 @@ const AnalyzerTool = () => {
 
           {/* Terminal log */}
           {logLines.length > 0 && (
-            <div className="mt-6 bg-background rounded-lg p-4 max-h-80 overflow-y-auto border border-border font-mono text-xs space-y-0.5">
+            <div className="mt-6 bg-muted rounded-2xl p-4 max-h-80 overflow-y-auto border-2 border-border font-mono text-xs space-y-0.5">
               {logLines.map((line, i) => (
                 <div key={i} className={`${line.color} ${i === logLines.length - 1 && isAnalyzing ? 'animate-pulse' : ''}`}>
                   {line.text}
@@ -175,7 +175,7 @@ const AnalyzerTool = () => {
 
         {pipelineDone && (
           <button onClick={() => { reset(); setUrl(''); }}
-            className="mt-6 w-full py-2.5 rounded-lg border border-border text-muted-foreground hover:text-foreground hover:border-primary/30 transition-colors text-sm">
+            className="mt-6 w-full py-2.5 rounded-2xl border-2 border-border text-muted-foreground hover:text-foreground hover:bg-muted transition-colors text-sm font-bold shadow-[3px_3px_0px_0px_hsl(var(--border))]">
             Analyze Another Link
           </button>
         )}
