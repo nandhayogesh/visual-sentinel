@@ -187,7 +187,7 @@ const AnalyzerTool = () => {
 
         {/* Analysis log */}
         {logLines.length > 0 && (
-          <div className="mt-4 bg-foreground rounded-2xl p-5 max-h-64 overflow-y-auto font-mono text-xs space-y-1 animate-slide-up">
+          <div className="mt-4 bg-zinc-950 rounded-2xl p-5 max-h-64 overflow-y-auto font-mono text-xs space-y-1 animate-slide-up">
             <div className="flex items-center gap-1.5 mb-3 pb-3 border-b border-white/10">
               <div className="w-2.5 h-2.5 rounded-full bg-red-400/70" />
               <div className="w-2.5 h-2.5 rounded-full bg-yellow-400/70" />

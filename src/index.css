@@ -63,13 +63,13 @@
   .dark {
     /* Dark background */
     --background: 220 15% 8%;
-    --foreground: 82 100% 62%;
+    --foreground: 0 0% 92%;
 
     --card: 220 15% 11%;
-    --card-foreground: 82 100% 62%;
+    --card-foreground: 0 0% 92%;
 
     --popover: 220 15% 11%;
-    --popover-foreground: 82 100% 62%;
+    --popover-foreground: 0 0% 92%;
 
     /* Purple stays */
     --primary: 262 83% 65%;
@@ -80,10 +80,10 @@
     --accent-foreground: 240 10% 6%;
 
     --secondary: 220 15% 14%;
-    --secondary-foreground: 82 80% 58%;
+    --secondary-foreground: 0 0% 85%;
 
     --muted: 220 15% 16%;
-    --muted-foreground: 82 45% 55%;
+    --muted-foreground: 220 10% 55%;
 
     --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 100%;
