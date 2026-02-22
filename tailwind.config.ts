@@ -14,8 +14,9 @@ export default {
     },
     extend: {
       fontFamily: {
-        body: ["'Segoe UI'", "system-ui", "sans-serif"],
-        mono: ["'Courier New'", "monospace"],
+        sans: ["'Inter'", "-apple-system", "BlinkMacSystemFont", "'Segoe UI'", "sans-serif"],
+        body: ["'Inter'", "-apple-system", "BlinkMacSystemFont", "'Segoe UI'", "sans-serif"],
+        mono: ["'JetBrains Mono'", "'Fira Code'", "'Courier New'", "monospace"],
       },
       colors: {
         border: "hsl(var(--border))",

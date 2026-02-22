@@ -19,12 +19,16 @@ const StatsDashboard = () => {
   const { ref, visible } = useScrollReveal();
 
   return (
-    <section className="py-16 px-4" ref={ref}>
+    <section id="statistics" className="py-24 px-6 bg-secondary/40" ref={ref}>
       <div className="max-w-5xl mx-auto">
-        <h2 className="text-3xl font-bold text-center text-foreground mb-10">Live Statistics</h2>
+        <div className="text-center mb-14">
+          <span className="inline-block text-xs font-semibold tracking-widest uppercase text-primary mb-3 px-3 py-1 bg-primary/10 rounded-full">Real-time Data</span>
+          <h2 className="text-4xl font-black text-foreground mb-3">Live Statistics</h2>
+          <p className="text-muted-foreground text-lg">Real-time activity from the VisualVerifier network</p>
+        </div>
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           {stats.map((s, i) => (
-            <StatCard key={i} {...s} visible={visible} />
+            <StatCard key={i} {...s} visible={visible} delay={i * 80} />
           ))}
         </div>
       </div>
@@ -32,21 +36,25 @@ const StatsDashboard = () => {
   );
 };
 
-function StatCard({ label, target, sparkline, display, visible }: {
-  label: string; target: number; sparkline: number; display?: string; visible: boolean;
+function StatCard({ label, target, sparkline, display, visible, delay }: {
+  label: string; target: number; sparkline: number; display?: string; visible: boolean; delay: number;
 }) {
   const { count, ref } = useCountUp(target, 2000);
 
   return (
-    <div ref={ref}
-      className={`glass-card p-5 transition-all duration-500 ${visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}
+    <div
+      ref={ref}
+      className={`bg-white border border-border rounded-2xl p-5 transition-all duration-500 hover:shadow-sm ${
+        visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
+      }`}
+      style={{ transitionDelay: `${delay}ms` }}
     >
-      <div className="text-xs text-muted-foreground mb-1">{label}</div>
-      <div className="text-2xl font-bold text-foreground font-mono">
+      <div className="text-xs text-muted-foreground font-medium mb-1">{label}</div>
+      <div className="text-2xl font-black text-foreground">
         {display || count.toLocaleString()}
       </div>
-      <svg viewBox="0 0 50 24" className="w-full h-6 mt-2">
-        <path d={sparklinePaths[sparkline]} fill="none" stroke="hsl(var(--primary))" strokeWidth="1.5" opacity="0.6" />
+      <svg viewBox="0 0 50 24" className="w-full h-6 mt-3">
+        <path d={sparklinePaths[sparkline]} fill="none" stroke="hsl(var(--primary))" strokeWidth="1.5" opacity="0.5" />
       </svg>
     </div>
   );

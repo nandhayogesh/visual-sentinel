@@ -15,7 +15,7 @@ const HashGrid = ({ hash, compHash, label }: { hash: string; compHash: string; l
           <div key={i}
             className={`w-5 h-5 rounded-sm transition-all ${
               diff ? 'bg-destructive animate-pulse' :
-              bit === '1' ? 'bg-primary' : 'bg-secondary'
+              bit === '1' ? 'bg-primary' : 'bg-muted'
             }`}
           />
         );
@@ -33,13 +33,13 @@ const HashComparison = ({ brandHash, scamHash, brandName, hammingDistance }: Pro
   const gaugeColor = hammingDistance <= 10 ? 'bg-destructive' : hammingDistance <= 20 ? 'bg-warning' : 'bg-safe';
 
   return (
-    <div className="glass-card p-6">
-      <h3 className="text-lg font-bold text-foreground mb-6 text-center">Visual Hash Comparison</h3>
+    <div className="bg-card border border-border rounded-2xl p-6 shadow-sm">
+      <h3 className="text-base font-bold text-foreground mb-6 text-center">Visual Hash Comparison</h3>
 
       <div className="flex flex-col sm:flex-row justify-center items-center gap-8 mb-8">
         <HashGrid hash={brandHash} compHash={scamHash} label={`${brandName} (Original)`} />
-        <div className="text-2xl text-muted-foreground">⟷</div>
-        <HashGrid hash={scamHash} compHash={brandHash} label="Scam Site" />
+        <div className="text-muted-foreground font-bold text-lg">vs</div>
+        <HashGrid hash={scamHash} compHash={brandHash} label="Suspicious Site" />
       </div>
 
       {/* Hamming Distance Gauge */}
@@ -48,7 +48,7 @@ const HashComparison = ({ brandHash, scamHash, brandName, hammingDistance }: Pro
           <span>0 (Identical)</span>
           <span>64 (Unique)</span>
         </div>
-        <div className="h-3 bg-secondary rounded-full overflow-hidden relative">
+        <div className="h-2 bg-muted rounded-full overflow-hidden relative">
           <div className={`h-full ${gaugeColor} rounded-full transition-all duration-1000`}
             style={{ width: `${gaugePercent}%` }} />
         </div>

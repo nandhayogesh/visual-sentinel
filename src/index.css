@@ -1,34 +1,39 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
   :root {
-    --background: 270 25% 92%;
-    --foreground: 0 0% 8%;
+    /* Clean white base */
+    --background: 0 0% 98%;
+    --foreground: 240 10% 6%;
 
     --card: 0 0% 100%;
-    --card-foreground: 0 0% 8%;
+    --card-foreground: 240 10% 6%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 8%;
+    --popover-foreground: 240 10% 6%;
 
-    --primary: 270 60% 72%;
+    /* Purple primary */
+    --primary: 262 83% 58%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 45 100% 70%;
-    --secondary-foreground: 0 0% 8%;
+    /* Lime green accent */
+    --accent: 82 100% 62%;
+    --accent-foreground: 240 10% 6%;
 
-    --muted: 270 15% 86%;
-    --muted-foreground: 0 0% 40%;
+    --secondary: 240 5% 96%;
+    --secondary-foreground: 240 10% 6%;
 
-    --accent: 270 60% 72%;
-    --accent-foreground: 0 0% 100%;
+    --muted: 240 5% 94%;
+    --muted-foreground: 240 4% 46%;
 
-    --destructive: 0 84% 60%;
+    --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 100%;
 
-    --safe: 160 84% 39%;
+    --safe: 142 71% 45%;
     --safe-foreground: 0 0% 100%;
 
     --warning: 38 92% 50%;
@@ -37,20 +42,64 @@
     --unknown: 220 9% 46%;
     --unknown-foreground: 0 0% 100%;
 
-    --border: 0 0% 15%;
-    --input: 270 15% 86%;
-    --ring: 270 60% 72%;
+    --border: 240 6% 90%;
+    --input: 240 6% 90%;
+    --ring: 262 83% 58%;
 
-    --radius: 1rem;
+    --radius: 0.75rem;
 
-    --sidebar-background: 270 25% 92%;
-    --sidebar-foreground: 0 0% 8%;
-    --sidebar-primary: 270 60% 72%;
+    --sidebar-background: 0 0% 98%;
+    --sidebar-foreground: 240 10% 6%;
+    --sidebar-primary: 262 83% 58%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 270 15% 86%;
-    --sidebar-accent-foreground: 0 0% 8%;
-    --sidebar-border: 0 0% 15%;
-    --sidebar-ring: 270 60% 72%;
+    --sidebar-accent: 240 5% 94%;
+    --sidebar-accent-foreground: 240 10% 6%;
+    --sidebar-border: 240 6% 90%;
+    --sidebar-ring: 262 83% 58%;
+  }
+}
+
+@layer base {
+  .dark {
+    /* Dark background */
+    --background: 220 15% 8%;
+    --foreground: 82 100% 62%;
+
+    --card: 220 15% 11%;
+    --card-foreground: 82 100% 62%;
+
+    --popover: 220 15% 11%;
+    --popover-foreground: 82 100% 62%;
+
+    /* Purple stays */
+    --primary: 262 83% 65%;
+    --primary-foreground: 0 0% 100%;
+
+    /* Lime accent stays */
+    --accent: 82 100% 62%;
+    --accent-foreground: 240 10% 6%;
+
+    --secondary: 220 15% 14%;
+    --secondary-foreground: 82 80% 58%;
+
+    --muted: 220 15% 16%;
+    --muted-foreground: 82 45% 55%;
+
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+
+    --safe: 142 71% 45%;
+    --safe-foreground: 0 0% 100%;
+
+    --warning: 38 92% 50%;
+    --warning-foreground: 0 0% 0%;
+
+    --unknown: 220 9% 55%;
+    --unknown-foreground: 0 0% 100%;
+
+    --border: 220 15% 20%;
+    --input: 220 15% 20%;
+    --ring: 82 100% 62%;
   }
 }
 
@@ -60,38 +109,73 @@
   }
 
   body {
-    @apply bg-background text-foreground font-body antialiased;
+    @apply bg-background text-foreground antialiased;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   }
 }
 
 @layer components {
   .glass-card {
-    @apply bg-card border-2 border-border rounded-2xl shadow-sm;
+    @apply bg-card border border-border rounded-xl shadow-sm;
+  }
+
+  .section-card {
+    @apply bg-card border border-border rounded-2xl shadow-sm;
   }
 
   .glow-border {
     border-color: hsl(var(--primary));
-    box-shadow: 4px 4px 0px 0px hsl(var(--border));
+    box-shadow: 0 0 0 2px hsl(var(--primary) / 0.15);
   }
 
   .glow-border-red {
     border-color: hsl(var(--destructive));
-    box-shadow: 4px 4px 0px 0px hsl(var(--destructive) / 0.3);
+    box-shadow: 0 4px 24px hsl(var(--destructive) / 0.15);
   }
 
   .glow-border-green {
     border-color: hsl(var(--safe));
-    box-shadow: 4px 4px 0px 0px hsl(var(--safe) / 0.3);
+    box-shadow: 0 4px 24px hsl(var(--safe) / 0.15);
   }
 
   .glow-border-yellow {
     border-color: hsl(var(--warning));
-    box-shadow: 4px 4px 0px 0px hsl(var(--warning) / 0.3);
+    box-shadow: 0 4px 24px hsl(var(--warning) / 0.15);
   }
 
   .glow-border-grey {
     border-color: hsl(var(--unknown));
-    box-shadow: 4px 4px 0px 0px hsl(var(--unknown) / 0.3);
+    box-shadow: 0 4px 24px hsl(var(--unknown) / 0.15);
+  }
+
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 px-6 py-3 rounded-full bg-primary text-white font-semibold text-sm transition-all duration-200 hover:bg-primary/90 hover:shadow-lg hover:-translate-y-0.5;
+  }
+
+  .btn-accent {
+    @apply inline-flex items-center justify-center gap-2 px-6 py-3 rounded-full font-semibold text-sm transition-all duration-200 hover:shadow-lg hover:-translate-y-0.5;
+    background-color: hsl(var(--accent));
+    color: hsl(var(--accent-foreground));
+  }
+
+  .btn-outline {
+    @apply inline-flex items-center justify-center gap-2 px-6 py-3 rounded-full font-semibold text-sm transition-all duration-200 hover:shadow-md hover:-translate-y-0.5;
+    background-color: hsl(var(--accent));
+    color: hsl(var(--accent-foreground));
+  }
+
+  .nav-pill {
+    @apply px-4 py-1.5 rounded-full text-sm font-medium transition-all duration-200;
+  }
+
+  .nav-pill-active {
+    @apply bg-primary text-white;
+  }
+
+  .nav-pill-inactive {
+    @apply font-semibold;
+    background-color: hsl(var(--accent));
+    color: hsl(var(--accent-foreground));
   }
 }
 
@@ -102,8 +186,8 @@
   }
 
   @keyframes pulse-glow {
-    0%, 100% { filter: drop-shadow(0 0 8px hsl(var(--primary) / 0.4)); }
-    50% { filter: drop-shadow(0 0 20px hsl(var(--primary) / 0.8)); }
+    0%, 100% { filter: drop-shadow(0 0 8px hsl(var(--primary) / 0.3)); }
+    50% { filter: drop-shadow(0 0 20px hsl(var(--primary) / 0.6)); }
   }
 
   @keyframes blink {
@@ -121,13 +205,13 @@
   }
 
   @keyframes slide-up {
-    from { opacity: 0; transform: translateY(30px); }
+    from { opacity: 0; transform: translateY(20px); }
     to { opacity: 1; transform: translateY(0); }
   }
 
-  @keyframes typewriter-cursor {
-    0%, 100% { border-color: hsl(var(--primary)); }
-    50% { border-color: transparent; }
+  @keyframes fade-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
   }
 
   @keyframes count-pulse {
@@ -158,7 +242,11 @@
   }
 
   .animate-slide-up {
-    animation: slide-up 0.6s ease-out forwards;
+    animation: slide-up 0.5s ease-out forwards;
+  }
+
+  .animate-fade-in {
+    animation: fade-in 0.5s ease-out forwards;
   }
 
   .animate-count-pulse {
