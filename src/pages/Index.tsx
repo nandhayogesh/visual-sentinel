@@ -1,14 +1,21 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+import HeroSection from '@/components/visualverifier/HeroSection';
+import HowItWorks from '@/components/visualverifier/HowItWorks';
+import AnalyzerTool from '@/components/visualverifier/AnalyzerTool';
+import DatabasePanel from '@/components/visualverifier/DatabasePanel';
+import ScamPatterns from '@/components/visualverifier/ScamPatterns';
+import StatsDashboard from '@/components/visualverifier/StatsDashboard';
+import FooterSection from '@/components/visualverifier/FooterSection';
 
-const Index = () => {
-  return (
-    <div className="flex min-h-screen items-center justify-center bg-background">
-      <div className="text-center">
-        <h1 className="mb-4 text-4xl font-bold">Welcome to Your Blank App</h1>
-        <p className="text-xl text-muted-foreground">Start building your amazing project here!</p>
-      </div>
-    </div>
-  );
-};
+const Index = () => (
+  <div className="min-h-screen bg-background">
+    <HeroSection />
+    <HowItWorks />
+    <AnalyzerTool />
+    <DatabasePanel />
+    <ScamPatterns />
+    <StatsDashboard />
+    <FooterSection />
+  </div>
+);
 
 export default Index;
