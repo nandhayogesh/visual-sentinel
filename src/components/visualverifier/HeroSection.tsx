@@ -29,7 +29,7 @@ const HeroSection = () => {
 
             <p className="text-base sm:text-lg text-muted-foreground leading-relaxed mb-6 sm:mb-8 max-w-xl">
               Analyze any link for visual impersonation, phishing, and suspicious patterns.
-              Powered by perceptual hashing and AI-driven URL analysis.
+              Powered by perceptual hashing and domain validation.
             </p>
 
             <div className="flex flex-col sm:flex-row flex-wrap items-stretch sm:items-center gap-3">
@@ -98,7 +98,7 @@ const HeroSection = () => {
 
               {/* Floating lime tag top-right */}
               <rect x="310" y="8" width="90" height="26" rx="13" fill="hsl(82,100%,62%)"/>
-              <text x="325" y="25" fill="#1a1a2e" fontSize="11" fontWeight="bold">AI Powered</text>
+              <text x="318" y="25" fill="#1a1a2e" fontSize="11" fontWeight="bold">Link Scanner</text>
 
               {/* Bottom decorative dots */}
               <circle cx="60" cy="350" r="5" fill="hsl(262,83%,58%)" opacity="0.4"/>
