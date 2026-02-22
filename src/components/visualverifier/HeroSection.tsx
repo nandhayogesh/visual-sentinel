@@ -17,7 +17,7 @@ const HeroSection = () => {
       {/* Animated gradient background */}
       <div className="absolute inset-0 animate-hero-gradient"
         style={{
-          background: 'radial-gradient(ellipse at 30% 50%, hsl(239 84% 67% / 0.15) 0%, transparent 50%), radial-gradient(ellipse at 70% 50%, hsl(239 84% 30% / 0.1) 0%, hsl(222 47% 8%) 70%)',
+          background: 'radial-gradient(ellipse at 30% 50%, hsl(270 60% 72% / 0.2) 0%, transparent 50%), radial-gradient(ellipse at 70% 50%, hsl(270 25% 88%) 0%, hsl(270 25% 92%) 70%)',
           backgroundSize: '200% 200%',
         }}
       />
@@ -35,9 +35,9 @@ const HeroSection = () => {
           Real-Time Visual Fingerprint Detection for E-Commerce Impersonation Scams
         </p>
 
-        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-safe/10 border border-safe/30 mb-10">
+        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-safe/15 border-2 border-safe/40 mb-10">
           <span className="w-2 h-2 rounded-full bg-safe animate-blink" />
-          <span className="text-safe text-sm font-medium tracking-wide">SYSTEM ONLINE</span>
+          <span className="text-safe text-sm font-bold tracking-wide">SYSTEM ONLINE</span>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-10">
@@ -48,7 +48,7 @@ const HeroSection = () => {
 
         <button
           onClick={handleScroll}
-          className="px-6 py-3 rounded-lg bg-secondary text-foreground border border-border hover:border-primary/50 transition-colors text-sm font-medium"
+          className="px-6 py-3 rounded-2xl bg-primary text-primary-foreground border-2 border-border shadow-[4px_4px_0px_0px_hsl(var(--border))] hover:shadow-[2px_2px_0px_0px_hsl(var(--border))] hover:translate-x-0.5 hover:translate-y-0.5 transition-all text-sm font-bold"
         >
           ↓ How It Works
         </button>
