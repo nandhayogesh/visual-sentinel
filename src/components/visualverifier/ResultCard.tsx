@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import type { AnalysisResult } from '@/types/analysis';
+import HashComparison from './HashComparison';
 
 interface Props {
   result: AnalysisResult;
@@ -101,10 +102,14 @@ const ResultCard = ({ result, onShowScreenshots }: Props) => {
     ? 'Not checked'
     : `${checks.virustotal?.maliciousCount ?? 0} malicious / ${checks.virustotal?.totalEngines ?? 0} engines`;
 
-  const phishLabel = checks.phishtank?.error
+  const openphishLabel = checks.openphish?.error
     ? 'Not checked'
-    : checks.phishtank?.isPhish ? 'Listed as phishing' : checks.phishtank?.inDatabase ? 'In database (unverified)' : 'Not listed';
-  const phishStatus: 'bad' | 'good' = checks.phishtank?.isPhish ? 'bad' : 'good';
+    : checks.openphish?.inFeed
+      ? checks.openphish.matchType === 'exact' ? 'Exact URL match in feed' : 'Domain found in feed'
+      : 'Not in feed';
+  const openphishStatus: 'bad' | 'warn' | 'good' = checks.openphish?.inFeed
+    ? checks.openphish.matchType === 'exact' ? 'bad' : 'warn'
+    : 'good';
 
   const sbLabel = checks.safebrowsing?.error
     ? 'Not checked'
@@ -164,6 +169,17 @@ const ResultCard = ({ result, onShowScreenshots }: Props) => {
         </div>
       )}
 
+      {/* Verified official site badge */}
+      {brand.detected && !brand.isImpersonation && (
+        <div className="flex items-center gap-2 mb-3 px-3 py-2 rounded-lg bg-safe/10 border border-safe/30 text-xs text-safe">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="w-3.5 h-3.5 flex-shrink-0">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+            <polyline points="9 12 11 14 15 10" />
+          </svg>
+          Verified official <strong>{brand.name}</strong> website — <span className="font-mono">{domain}</span>
+        </div>
+      )}
+
       {/* Summary */}
       <p className="text-muted-foreground text-sm mb-4 leading-relaxed">{verdict.summary}</p>
 
@@ -205,13 +221,25 @@ const ResultCard = ({ result, onShowScreenshots }: Props) => {
           {checks.geo && <CheckRow label="IP Location" value={`${checks.geo.city}, ${checks.geo.country}`} />}
           {checks.geo && <CheckRow label="ISP" value={checks.geo.isp || 'Unknown'} />}
           <CheckRow label="VirusTotal" value={vtLabel} status={vtStatus} />
-          <CheckRow label="PhishTank" value={phishLabel} status={phishStatus} />
+          <CheckRow label="OpenPhish" value={openphishLabel} status={openphishStatus} />
           <CheckRow label="Google Safe Browsing" value={sbLabel} status={sbStatus} />
           <CheckRow label="Security Headers" value={`${headerCount}/3 present`} status={headerStatus} />
           <CheckRow label="HTTPS Redirect Count" value={String(checks.headers?.redirectCount ?? 0)} />
           {checks.urlscan?.ip && (
             <CheckRow label="URLScan Server IP" value={`${checks.urlscan.ip} (${checks.urlscan.country || '?'})`} />
           )}
+        </div>
+      )}
+
+      {/* Visual hash comparison — only shown when brand impersonation detected and pHash data available */}
+      {result.visualHash && result.brand.name && (
+        <div className="mb-4">
+          <HashComparison
+            brandHash={result.visualHash.officialHash}
+            scamHash={result.visualHash.suspiciousHash}
+            brandName={result.brand.name}
+            hammingDistance={result.visualHash.hammingDistance}
+          />
         </div>
       )}
 
@@ -232,12 +260,12 @@ const ResultCard = ({ result, onShowScreenshots }: Props) => {
         )}
         {(verdict.color === 'red' || verdict.color === 'orange') && (
           <a
-            href={`https://www.phishtank.com/add_web_phish.php`}
+            href="https://safebrowsing.google.com/safebrowsing/report_phish/"
             target="_blank"
             rel="noopener noreferrer"
             className="px-4 py-2 rounded-lg bg-destructive text-white text-sm font-semibold hover:bg-destructive/90 transition-colors"
           >
-            Report to PhishTank
+            Report Phishing
           </a>
         )}
       </div>

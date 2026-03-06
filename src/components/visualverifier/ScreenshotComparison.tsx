@@ -28,38 +28,49 @@ const ScreenshotComparison = ({ screenshots, brand, suspiciousDomain }: Props) =
 
       <div className={`grid gap-4 ${screenshots.official ? 'grid-cols-1 sm:grid-cols-2' : 'grid-cols-1'}`}>
 
-        {/* Suspicious site */}
-        <div>
-          <div className="flex items-center gap-2 mb-2">
-            <span className="w-2 h-2 rounded-full bg-destructive flex-shrink-0" />
-            <span className="text-xs font-semibold text-destructive uppercase tracking-wide">Suspicious Site</span>
-          </div>
-          <p className="text-xs text-muted-foreground font-mono mb-2 truncate">{suspiciousDomain}</p>
-          {screenshots.suspicious ? (
-            <div className="relative rounded-xl overflow-hidden border border-destructive/30 bg-secondary">
-              <img
-                src={screenshots.suspicious}
-                alt={`Screenshot of suspicious site: ${suspiciousDomain}`}
-                className="w-full object-cover object-top"
-                style={{ maxHeight: '280px' }}
-                onError={(e) => {
-                  (e.target as HTMLImageElement).style.display = 'none';
-                  (e.target as HTMLImageElement).nextElementSibling?.classList.remove('hidden');
-                }}
-              />
-              <div className="hidden p-8 text-center text-xs text-muted-foreground">
-                Screenshot not yet available
+        {/* Analyzed / Suspicious site */}
+        {(() => {
+          const isImpersonation = brand.isImpersonation;
+          const dotColor  = isImpersonation ? 'bg-destructive'    : 'bg-primary';
+          const lblColor  = isImpersonation ? 'text-destructive'  : 'text-primary';
+          const borderCls = isImpersonation ? 'border-destructive/30' : 'border-primary/30';
+          const badgeCls  = isImpersonation ? 'bg-destructive'    : 'bg-primary';
+          const badgeTxt  = isImpersonation ? 'SUSPICIOUS'        : 'ANALYZED';
+          const panelLbl  = isImpersonation ? 'Suspicious Site'   : 'Analyzed Site';
+          return (
+            <div>
+              <div className="flex items-center gap-2 mb-2">
+                <span className={`w-2 h-2 rounded-full ${dotColor} flex-shrink-0`} />
+                <span className={`text-xs font-semibold ${lblColor} uppercase tracking-wide`}>{panelLbl}</span>
               </div>
-              <div className="absolute top-2 right-2 bg-destructive text-white text-xs font-bold px-2 py-0.5 rounded-full">
-                SUSPICIOUS
-              </div>
+              <p className="text-xs text-muted-foreground font-mono mb-2 truncate">{suspiciousDomain}</p>
+              {screenshots.suspicious ? (
+                <div className={`relative rounded-xl overflow-hidden border ${borderCls} bg-secondary`}>
+                  <img
+                    src={screenshots.suspicious}
+                    alt={`Screenshot of ${suspiciousDomain}`}
+                    className="w-full object-cover object-top"
+                    style={{ maxHeight: '280px' }}
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).style.display = 'none';
+                      (e.target as HTMLImageElement).nextElementSibling?.classList.remove('hidden');
+                    }}
+                  />
+                  <div className="hidden p-8 text-center text-xs text-muted-foreground">
+                    Screenshot not yet available
+                  </div>
+                  <div className={`absolute top-2 right-2 ${badgeCls} text-white text-xs font-bold px-2 py-0.5 rounded-full`}>
+                    {badgeTxt}
+                  </div>
+                </div>
+              ) : (
+                <div className="rounded-xl border border-border bg-secondary flex items-center justify-center p-8 text-xs text-muted-foreground" style={{ minHeight: '160px' }}>
+                  Screenshot unavailable
+                </div>
+              )}
             </div>
-          ) : (
-            <div className="rounded-xl border border-border bg-secondary flex items-center justify-center p-8 text-xs text-muted-foreground" style={{ minHeight: '160px' }}>
-              Screenshot unavailable
-            </div>
-          )}
-        </div>
+          );
+        })()}
 
         {/* Official site (only shown when brand impersonation detected) */}
         {screenshots.official && brand.name && (

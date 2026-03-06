@@ -1,3 +1,7 @@
+# Environment files (never commit API keys)
+.env
+server/.env
+
 # Logs
 logs
 *.log

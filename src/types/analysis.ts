@@ -77,12 +77,9 @@ export interface VirusTotalCheck {
   error?: string;
 }
 
-export interface PhishTankCheck {
-  inDatabase: boolean;
-  isPhish: boolean;
-  verified: boolean;
-  phishId?: string | null;
-  phishDetailUrl?: string | null;
+export interface OpenPhishCheck {
+  inFeed: boolean;
+  matchType: 'exact' | 'domain' | null;
   error?: string;
 }
 
@@ -110,7 +107,7 @@ export interface AllChecks {
   dns: DNSCheck;
   headers: HeadersCheck;
   virustotal: VirusTotalCheck;
-  phishtank: PhishTankCheck;
+  openphish: OpenPhishCheck;
   safebrowsing: SafeBrowsingCheck;
   urlscan: URLScanCheck;
   geo: GeoInfo | null;
@@ -121,6 +118,13 @@ export interface Screenshots {
   official: string | null;
 }
 
+export interface VisualHash {
+  suspiciousHash: string;      // 64-char binary string '0'/'1' per pixel
+  officialHash: string;        // 64-char binary string '0'/'1' per pixel
+  hammingDistance: number;     // 0–64  (0 = identical images)
+  similarityPercent: number;   // 0–100 (100 = identical images)
+}
+
 export interface AnalysisResult {
   jobId: string;
   status: 'complete';
@@ -129,6 +133,7 @@ export interface AnalysisResult {
   brand: BrandInfo;
   verdict: Verdict;
   screenshots: Screenshots;
+  visualHash?: VisualHash | null;
   checks: AllChecks;
   riskFactors: string[];
 }
