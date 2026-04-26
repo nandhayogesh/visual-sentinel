@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import type { AnalysisResult } from '@/types/analysis';
 import HashComparison from './HashComparison';
+import { buildAnalysisPresentationModel } from '@/lib/presentation';
 
 interface Props {
   result: AnalysisResult;
@@ -81,6 +82,7 @@ const ResultCard = ({ result, onShowScreenshots }: Props) => {
   const [showDetails, setShowDetails] = useState(false);
   const cfg = configs[result.verdict.color] ?? configs.green;
   const { checks, verdict, brand, domain, riskFactors } = result;
+  const model = buildAnalysisPresentationModel(result);
 
   // Build check rows for the details panel
   const sslStatus = checks.ssl?.valid ? 'good' : 'bad';
@@ -127,21 +129,44 @@ const ResultCard = ({ result, onShowScreenshots }: Props) => {
   return (
     <div className={`bg-card border ${cfg.border} rounded-2xl p-6 shadow-sm ${cfg.bg}`}>
       {/* Header row */}
-      <div className="flex items-start justify-between gap-4 mb-3">
-        <div className="flex items-center gap-3">
-          <div className={`w-10 h-10 rounded-xl ${cfg.iconBg} ${cfg.iconColor} flex items-center justify-center flex-shrink-0`}>
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6 border-b border-border/40 pb-5">
+        <div className="flex items-center gap-4">
+          <div className={`w-12 h-12 rounded-xl ${cfg.iconBg} ${cfg.iconColor} flex items-center justify-center flex-shrink-0`}>
             {cfg.icon}
           </div>
           <div>
-            <h3 className="font-bold text-foreground text-base">{verdict.label}</h3>
-            <p className="text-xs text-muted-foreground font-mono mt-0.5">{domain}</p>
+            <div className="flex items-center gap-2">
+              <h3 className="font-bold text-foreground text-xl uppercase tracking-wide">{verdict.label}</h3>
+              <span className={`text-[10px] font-bold px-2 py-0.5 rounded-sm uppercase tracking-wider ${cfg.badge}`}>
+                {verdict.label}
+              </span>
+            </div>
+            <p className="text-sm text-muted-foreground font-mono mt-1">{domain}</p>
           </div>
         </div>
-        <div className="flex flex-col items-end gap-1 flex-shrink-0">
-          <span className={`text-xs font-bold px-2.5 py-1 rounded-full ${cfg.badge}`}>
-            {verdict.label}
-          </span>
-          <span className="text-xs text-muted-foreground">Risk: {verdict.score}/100</span>
+
+        <div className="flex items-center gap-6 bg-background/40 backdrop-blur-sm px-5 py-2.5 rounded-xl border border-border/50 shadow-sm">
+          <div className="flex flex-col items-center">
+            <span className="text-[10px] text-muted-foreground uppercase tracking-widest mb-1 font-semibold">Risk Score</span>
+            <div className="flex items-baseline">
+              <span className={`text-4xl font-black ${
+                model.riskScore >= 70 ? 'text-destructive' :
+                model.riskScore >= 40 ? 'text-orange-500' :
+                model.riskScore >= 20 ? 'text-amber-400' : 'text-safe'
+              }`}>
+                {model.riskScore}
+              </span>
+              <span className="text-sm font-medium text-muted-foreground/50 ml-1">/100</span>
+            </div>
+          </div>
+          <div className="w-px h-10 bg-border/60"></div>
+          <div className="flex flex-col items-center">
+            <span className="text-[10px] text-muted-foreground uppercase tracking-widest mb-1 font-semibold">Confidence</span>
+            <div className="flex items-baseline">
+              <span className="text-2xl font-bold text-foreground/80">{model.confidenceScore}</span>
+              <span className="text-xs font-medium text-muted-foreground/50 ml-0.5">/100</span>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -182,6 +207,67 @@ const ResultCard = ({ result, onShowScreenshots }: Props) => {
 
       {/* Summary */}
       <p className="text-muted-foreground text-sm mb-4 leading-relaxed">{verdict.summary}</p>
+
+      {/* Partial signal note */}
+      {model.hasPartialSignals && (
+        <div className="mb-4 rounded-lg border border-warning/30 bg-warning/10 px-3 py-2 text-xs text-warning">
+          Some threat intelligence sources were unavailable during this scan. Confidence may be reduced.
+        </div>
+      )}
+
+      {/* Top evidence */}
+      {model.evidenceTop.length > 0 && (
+        <div className="mb-4">
+          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">Top Evidence</p>
+          <div className="space-y-2">
+            {model.evidenceTop.map((item) => (
+              <div key={item.id} className="rounded-lg border border-border/80 bg-secondary/70 px-3 py-2">
+                <div className="flex items-center justify-between gap-3 mb-1">
+                  <p className="text-xs font-semibold text-foreground">{item.title}</p>
+                  <span className={`text-[10px] font-bold uppercase tracking-wide ${
+                    item.impact === 'high' ? 'text-destructive' : item.impact === 'medium' ? 'text-warning' : 'text-safe'
+                  }`}>
+                    {item.impact} impact
+                  </span>
+                </div>
+                <p className="text-xs text-muted-foreground">{item.explanation}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Recommended actions */}
+      {model.recommendations.length > 0 && (
+        <div className="mb-4">
+          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">Recommended Actions</p>
+          <ul className="space-y-2">
+            {model.recommendations.map(action => (
+              <li key={action.id} className="rounded-lg border border-border/80 bg-secondary/70 px-3 py-2">
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <p className="text-xs font-semibold text-foreground">{action.label}</p>
+                    <p className="text-xs text-muted-foreground mt-0.5">{action.rationale}</p>
+                  </div>
+                  {action.priority === 'primary' && (
+                    <span className="text-[10px] font-bold uppercase tracking-wide text-primary">Primary</span>
+                  )}
+                </div>
+                {action.href && (
+                  <a
+                    href={action.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex mt-2 text-xs font-medium text-accent hover:text-accent/80 transition-colors"
+                  >
+                    Open reporting form
+                  </a>
+                )}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
 
       {/* Risk factors */}
       {riskFactors.length > 0 && (

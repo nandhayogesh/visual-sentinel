@@ -16,7 +16,7 @@ const BASE = 'https://www.virustotal.com/api/v3';
 const POLL_INTERVAL_MS = 3000;
 const MAX_RETRIES = 10;
 
-async function submitAndAnalyze(url) {
+async function submitAndAnalyze(url, onProgress = () => {}) {
   const apiKey = process.env.VIRUSTOTAL_API_KEY;
   if (!apiKey) {
     return { error: 'VIRUSTOTAL_API_KEY not configured', maliciousCount: 0, suspiciousCount: 0, harmlessCount: 0, undetectedCount: 0, totalEngines: 0, detected: false };
@@ -33,6 +33,13 @@ async function submitAndAnalyze(url) {
       timeout: 15000,
     });
     analysisId = submitRes.data?.data?.id;
+    onProgress({
+      phase: 'submitted',
+      stage: 'VirusTotal analysis submitted…',
+      progress: 20,
+      attempt: 0,
+      maxRetries: MAX_RETRIES,
+    });
   } catch (err) {
     const msg = err.response?.data?.error?.message || err.message;
     return { error: `VirusTotal submit failed: ${msg}`, maliciousCount: 0, suspiciousCount: 0, harmlessCount: 0, undetectedCount: 0, totalEngines: 0, detected: false };
@@ -44,6 +51,13 @@ async function submitAndAnalyze(url) {
 
   // Poll for completed analysis
   for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
+    onProgress({
+      phase: 'polling',
+      stage: `VirusTotal polling ${attempt + 1}/${MAX_RETRIES}…`,
+      progress: 20 + Math.round(((attempt + 1) / MAX_RETRIES) * 20),
+      attempt: attempt + 1,
+      maxRetries: MAX_RETRIES,
+    });
     await sleep(POLL_INTERVAL_MS);
     try {
       const analysisRes = await axios.get(`${BASE}/analyses/${analysisId}`, {
@@ -78,6 +92,13 @@ async function submitAndAnalyze(url) {
     }
   }
 
+  onProgress({
+    phase: 'timeout',
+    stage: 'VirusTotal timed out waiting for analysis…',
+    progress: 40,
+    attempt: MAX_RETRIES,
+    maxRetries: MAX_RETRIES,
+  });
   return { error: 'VirusTotal timed out waiting for analysis', maliciousCount: 0, suspiciousCount: 0, harmlessCount: 0, undetectedCount: 0, totalEngines: 0, detected: false };
 }
 

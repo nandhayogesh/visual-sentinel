@@ -14,9 +14,14 @@ export default {
     },
     extend: {
       fontFamily: {
-        sans: ["'Inter'", "-apple-system", "BlinkMacSystemFont", "'Segoe UI'", "sans-serif"],
-        body: ["'Inter'", "-apple-system", "BlinkMacSystemFont", "'Segoe UI'", "sans-serif"],
-        mono: ["'JetBrains Mono'", "'Fira Code'", "'Courier New'", "monospace"],
+        sans: ["'IBM Plex Sans'", "'Segoe UI'", "sans-serif"],
+        body: ["'IBM Plex Sans'", "'Segoe UI'", "sans-serif"],
+        mono: ["'IBM Plex Mono'", "'JetBrains Mono'", "'Courier New'", "monospace"],
+      },
+      spacing: {
+        18: "4.5rem",
+        22: "5.5rem",
+        26: "6.5rem",
       },
       colors: {
         border: "hsl(var(--border))",
@@ -24,6 +29,11 @@ export default {
         ring: "hsl(var(--ring))",
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
+        surface: {
+          1: "hsl(var(--surface-1))",
+          2: "hsl(var(--surface-2))",
+          3: "hsl(var(--surface-3))",
+        },
         primary: {
           DEFAULT: "hsl(var(--primary))",
           foreground: "hsl(var(--primary-foreground))",
@@ -76,9 +86,16 @@ export default {
         },
       },
       borderRadius: {
-        lg: "var(--radius)",
-        md: "calc(var(--radius) - 2px)",
-        sm: "calc(var(--radius) - 4px)",
+        xs: "var(--radius-xs)",
+        sm: "var(--radius-sm)",
+        md: "var(--radius-md)",
+        lg: "var(--radius-lg)",
+        xl: "var(--radius-xl)",
+      },
+      boxShadow: {
+        1: "var(--shadow-1)",
+        2: "var(--shadow-2)",
+        focus: "var(--shadow-focus)",
       },
       keyframes: {
         "accordion-down": {

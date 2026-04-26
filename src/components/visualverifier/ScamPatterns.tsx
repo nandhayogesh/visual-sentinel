@@ -52,8 +52,8 @@ const categories = [
 ];
 
 const levelStyles: Record<string, string> = {
-  CRITICAL: 'bg-red-50 text-red-600 border border-red-200',
-  HIGH: 'bg-orange-50 text-orange-600 border border-orange-200',
+  CRITICAL: 'bg-destructive/10 text-destructive border border-destructive/30',
+  HIGH: 'bg-warning/10 text-warning border border-warning/30',
   MEDIUM: 'bg-secondary text-muted-foreground border border-border',
 };
 
@@ -71,24 +71,24 @@ const ScamPatterns = () => {
       <div className="max-w-6xl mx-auto">
         <div className="text-center mb-14">
           <span className="inline-block text-xs font-semibold tracking-widest uppercase text-primary mb-3 px-3 py-1 bg-primary/10 rounded-full">Pattern Library</span>
-          <h2 className="text-4xl font-black text-foreground mb-3">Scam Pattern Categories</h2>
-          <p className="text-muted-foreground text-lg">Common threat archetypes detected by VisualVerifier's heuristic engine</p>
+          <h2 className="text-3xl sm:text-4xl font-bold text-foreground mb-3">Scam Pattern Categories</h2>
+          <p className="text-muted-foreground text-lg max-w-2xl mx-auto">Common threat archetypes detected by VisualVerifier's heuristic engine.</p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
           {categories.map((t, i) => (
             <div
               key={i}
-              className={`bg-card border border-border rounded-2xl p-5 transition-all duration-500 hover:shadow-md hover:-translate-y-0.5 ${
+              className={`bg-card border border-border rounded-2xl p-5 transition-all duration-500 hover:shadow-1 hover:-translate-y-0.5 ${
                 visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'
               }`}
               style={{ transitionDelay: `${i * 80}ms` }}
             >
               {/* Thumbnail */}
-              <div className={`h-20 rounded-xl bg-gradient-to-br ${thumbnailBg[t.color]} mb-4 flex items-center justify-center`}>
-                <div className="flex gap-2 opacity-30">
+              <div className={`h-20 rounded-xl bg-gradient-to-br ${thumbnailBg[t.color]} mb-4 flex items-center justify-center border border-border/70`}>
+                <div className="flex gap-2 opacity-25">
                   {Array.from({ length: 5 }).map((_, j) => (
-                    <div key={j} className="w-2 h-8 bg-gray-400 rounded-sm" style={{ height: `${20 + j * 8}px` }} />
+                    <div key={j} className="w-2 h-8 bg-foreground rounded-sm" style={{ height: `${20 + j * 8}px` }} />
                   ))}
                 </div>
               </div>
@@ -102,7 +102,7 @@ const ScamPatterns = () => {
 
               <div className="flex flex-wrap gap-1.5 mb-3">
                 {t.tags.map(tag => (
-                  <span key={tag} className="text-[11px] px-2.5 py-0.5 rounded-full bg-secondary text-muted-foreground font-medium">
+                  <span key={tag} className="text-[11px] px-2.5 py-0.5 rounded-full bg-secondary text-muted-foreground font-medium border border-border/60">
                     {tag}
                   </span>
                 ))}

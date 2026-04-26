@@ -33,19 +33,19 @@ const Navbar = () => {
     >
       <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
         {/* Logo */}
-        <Link to="/" className="flex items-center group">
-          <span className="text-xl sm:text-2xl font-black tracking-tight text-foreground">
-            Visual<span className="text-primary italic">Verifier</span>
+        <Link to="/" className="flex items-center group focus-visible-ring rounded-sm">
+          <span className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
+            Visual<span className="text-primary">Verifier</span>
           </span>
         </Link>
 
         {/* Nav links — desktop */}
-        <nav className="hidden md:flex items-center gap-1 bg-secondary rounded-full px-1.5 py-1.5">
+        <nav className="hidden md:flex items-center gap-1 bg-secondary rounded-lg px-1.5 py-1.5 border border-border/70">
           {navLinks.map(({ label, to }) => (
             <Link
               key={label}
               to={to}
-              className={`nav-pill ${isActive(to) ? 'nav-pill-active' : 'nav-pill-inactive'}`}
+              className={`nav-pill focus-visible-ring ${isActive(to) ? 'nav-pill-active' : 'nav-pill-inactive'}`}
             >
               {label}
             </Link>
@@ -59,14 +59,14 @@ const Navbar = () => {
             onClick={() => navigate('/analyzer')}
             className="hidden md:inline-flex btn-primary text-sm px-5 py-2"
           >
-            Try Analyzer
+            Analyze URL
           </button>
 
           {/* Hamburger — mobile only */}
           <button
             onClick={() => setMobileOpen(o => !o)}
             aria-label="Toggle menu"
-            className="md:hidden w-9 h-9 rounded-full flex items-center justify-center border border-border bg-secondary"
+            className="md:hidden w-9 h-9 rounded-full flex items-center justify-center border border-border bg-secondary focus-visible-ring"
           >
             {mobileOpen ? (
               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -90,8 +90,8 @@ const Navbar = () => {
               to={to}
               className={`px-4 py-2.5 rounded-xl text-sm font-semibold transition-colors ${
                 isActive(to)
-                  ? 'bg-primary text-white'
-                  : 'bg-secondary text-foreground hover:bg-accent hover:text-accent-foreground'
+                  ? 'bg-primary text-primary-foreground'
+                  : 'bg-secondary text-foreground hover:bg-muted'
               }`}
             >
               {label}

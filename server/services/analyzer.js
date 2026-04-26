@@ -6,7 +6,7 @@
  * job store, and assembles the final AnalysisResult payload.
  */
 
-const { updateJob, setJobComplete, setJobError } = require('../jobs');
+const { updateJob, setJobComplete, setJobError, emitJobEvent } = require('../jobs');
 const urlscanSvc          = require('./urlscan');
 const virustotalSvc       = require('./virustotal');
 const safebrowsingSvc     = require('./safebrowsing');
@@ -36,43 +36,122 @@ function normalizeUrl(rawUrl) {
   return u;
 }
 
+function withTimeout(promise, timeoutMs, label) {
+  return Promise.race([
+    promise,
+    new Promise((_, reject) => {
+      setTimeout(() => reject(new Error(`${label} timed out after ${timeoutMs}ms`)), timeoutMs);
+    }),
+  ]);
+}
+
 async function runAnalysis(jobId, rawUrl) {
   const url = normalizeUrl(rawUrl);
   const domain = parseDomain(rawUrl);
+  const partialChecks = {};
+  let currentProgress = 0;
+
+  const pushProgress = (nextProgress, stage, extra = {}) => {
+    currentProgress = Math.max(currentProgress, nextProgress);
+    updateJob(jobId, {
+      progress: currentProgress,
+      stage,
+      ...extra,
+    });
+  };
+
+  const recordCheck = (checkName, value, nextProgress, stage, status = 'fulfilled') => {
+    partialChecks[checkName] = value;
+    pushProgress(nextProgress, stage, {
+      partialChecks: { ...partialChecks },
+      completedCheck: { name: checkName, status },
+    });
+
+    emitJobEvent(jobId, 'progress', {
+      progress: currentProgress,
+      stage,
+      checkName,
+      check: value,
+      partialChecks: { ...partialChecks },
+      completedChecks: Object.keys(partialChecks).length,
+      totalChecks: 8,
+      status,
+    });
+  };
+
+  const trackCheck = (checkName, promise, fallbackValue, timeoutMs = 20000) => {
+    return withTimeout(promise, timeoutMs, checkName).then(
+      value => {
+        const completedCount = Object.keys(partialChecks).length + 1;
+        const nextProgress = 10 + Math.round((completedCount / 8) * 35);
+        recordCheck(checkName, value, nextProgress, `${checkName} check complete.`);
+        return value;
+      },
+      reason => {
+        const completedCount = Object.keys(partialChecks).length + 1;
+        const nextProgress = 10 + Math.round((completedCount / 8) * 35);
+        const errorMessage = reason?.message ?? String(reason);
+        const value = fallbackValue(errorMessage);
+        recordCheck(checkName, value, nextProgress, `${checkName} check complete.`, 'rejected');
+        return value;
+      }
+    );
+  };
 
   try {
     // ── Stage 1: Brand detection (instant, local) ─────────────────────────
-    updateJob(jobId, { progress: 5, stage: 'Identifying brand…' });
+    pushProgress(5, 'Identifying brand…');
     const brand = detectBrand(domain);
 
     // ── Stage 2: Fast parallel checks ─────────────────────────────────────
     // SSL, WHOIS, DNS, headers, Safe Browsing, OpenPhish, and VirusTotal
     // all run concurrently. VirusTotal includes its own polling internally.
-    updateJob(jobId, { progress: 10, stage: 'Running protocol checks…' });
+    pushProgress(10, 'Running protocol checks…');
 
-    const [sslRes, whoisRes, dnsRes, headersRes, sbRes, opRes, vtRes] =
-      await Promise.allSettled([
-        sslSvc.checkSSL(domain),
-        whoisSvc.lookupWhois(domain),
-        dnsSvc.lookupDNS(domain),
-        headersSvc.checkHeaders(url),
-        safebrowsingSvc.check(url),
-        openphishSvc.check(url),
-        virustotalSvc.submitAndAnalyze(url),
-      ]);
+    const sslPromise = trackCheck('ssl', sslSvc.checkSSL(domain), error => ({ error, valid: false, daysRemaining: 0, issuer: 'Unknown', domainMatch: false }), 20000);
+    const whoisPromise = trackCheck('whois', whoisSvc.lookupWhois(domain), error => ({ error, creationDate: null, domainAge: null, registrar: null, registrantCountry: null }), 20000);
+    const dnsPromise = trackCheck('dns', dnsSvc.lookupDNS(domain), error => ({ error, hasARecord: false, ipAddresses: [], hasMXRecord: false, mxRecords: [], nameservers: [], isCloudflareProxy: false }), 20000);
+    const headersPromise = trackCheck('headers', headersSvc.checkHeaders(url), error => ({ error, hasHSTS: false, hasCSP: false, hasXFrameOptions: false, hasXContentTypeOptions: false, hasReferrerPolicy: false, statusCode: null, finalUrl: url, redirectChain: [], redirectCount: 0, server: null }), 20000);
+    const safebrowsingPromise = trackCheck('safebrowsing', safebrowsingSvc.check(url), error => ({ error, isFlagged: false, threatType: null }), 15000);
+    const openphishPromise = trackCheck('openphish', openphishSvc.check(url), error => ({ error, inFeed: false, matchType: null }), 12000);
+    const virustotalPromise = trackCheck('virustotal', virustotalSvc.submitAndAnalyze(url, progressInfo => {
+      const nextProgress = typeof progressInfo?.progress === 'number' ? progressInfo.progress : currentProgress;
+      const stage = progressInfo?.stage ?? 'VirusTotal polling…';
+      pushProgress(nextProgress, stage, { completedCheck: { name: 'virustotal', status: 'running' } });
+      emitJobEvent(jobId, 'progress', {
+        progress: currentProgress,
+        stage,
+        checkName: 'virustotal',
+        checkProgress: progressInfo,
+      });
+    }), error => ({ error, maliciousCount: 0, suspiciousCount: 0, harmlessCount: 0, undetectedCount: 0, totalEngines: 0, detected: false }), 70000);
+    const urlscanPromise = trackCheck('urlscan', urlscanSvc.scan(url, progressInfo => {
+      const nextProgress = typeof progressInfo?.progress === 'number' ? progressInfo.progress : currentProgress;
+      const stage = progressInfo?.stage ?? 'URLScan polling…';
+      pushProgress(nextProgress, stage, { completedCheck: { name: 'urlscan', status: 'running' } });
+      emitJobEvent(jobId, 'progress', {
+        progress: currentProgress,
+        stage,
+        checkName: 'urlscan',
+        checkProgress: progressInfo,
+      });
+    }), error => ({ error, malicious: false, score: 0, categories: [], ip: null, country: null, asnName: null }), 70000);
 
-    updateJob(jobId, { progress: 45, stage: 'Checking OpenPhish feed…' });
-    const ssl         = sslRes.status === 'fulfilled'     ? sslRes.value     : { error: sslRes.reason?.message,     valid: false, daysRemaining: 0, issuer: 'Unknown', domainMatch: false };
-    const whois       = whoisRes.status === 'fulfilled'   ? whoisRes.value   : { error: whoisRes.reason?.message,   creationDate: null, domainAge: null, registrar: null, registrantCountry: null };
-    const dns         = dnsRes.status === 'fulfilled'     ? dnsRes.value     : { error: dnsRes.reason?.message,     hasARecord: false, ipAddresses: [], hasMXRecord: false, mxRecords: [], nameservers: [], isCloudflareProxy: false };
-    const headers     = headersRes.status === 'fulfilled' ? headersRes.value : { error: headersRes.reason?.message, hasHSTS: false, hasCSP: false, hasXFrameOptions: false, hasXContentTypeOptions: false, hasReferrerPolicy: false, statusCode: null, finalUrl: url, redirectChain: [], redirectCount: 0, server: null };
-    const safebrowsing = sbRes.status === 'fulfilled'     ? sbRes.value     : { error: sbRes.reason?.message,       isFlagged: false, threatType: null };
-    const openphish   = opRes.status === 'fulfilled'      ? opRes.value     : { error: opRes.reason?.message,       inFeed: false, matchType: null };
-    const virustotal  = vtRes.status === 'fulfilled'      ? vtRes.value     : { error: vtRes.reason?.message,       maliciousCount: 0, suspiciousCount: 0, harmlessCount: 0, undetectedCount: 0, totalEngines: 0, detected: false };
+    const [ssl, whois, dns, headers, safebrowsing, openphish, virustotal, urlscan] = await Promise.all([
+      sslPromise,
+      whoisPromise,
+      dnsPromise,
+      headersPromise,
+      safebrowsingPromise,
+      openphishPromise,
+      virustotalPromise,
+      urlscanPromise,
+    ]);
+
+    pushProgress(45, 'Checking OpenPhish feed…');
 
     // ── Stage 3: URLScan — submit + poll (slowest, ~15–45s) ───────────────
-    updateJob(jobId, { progress: 55, stage: 'Capturing screenshot via URLScan…' });
-    const urlscan = await urlscanSvc.scan(url);
+    pushProgress(55, 'Capturing screenshot via URLScan…');
 
     // ── Stage 4: Official screenshot + pHash (only when brand impersonation detected) ──
     const screenshots = {
@@ -82,13 +161,13 @@ async function runAnalysis(jobId, rawUrl) {
     let visualHash = null;
 
     if (brand.detected && urlscan.screenshotURL) {
-      updateJob(jobId, { progress: 80, stage: 'Fetching official site screenshot…' });
+      pushProgress(80, 'Fetching official site screenshot…');
       const officialUrl = await getOfficialScreenshot(brand.officialUrl).catch(() => null);
 
       if (officialUrl) {
         screenshots.official = officialUrl;
 
-        updateJob(jobId, { progress: 87, stage: 'Computing visual hash comparison…' });
+        pushProgress(87, 'Computing visual hash comparison…');
         const [suspHash, offHash] = await Promise.all([
           hashFromUrl(urlscan.screenshotURL).catch(() => null),
           hashFromUrl(officialUrl).catch(() => null),
@@ -107,12 +186,13 @@ async function runAnalysis(jobId, rawUrl) {
     }
 
     // ── Stage 5: GeoIP ────────────────────────────────────────────────────
-    updateJob(jobId, { progress: 92, stage: 'Resolving IP geolocation…' });
+    pushProgress(92, 'Resolving IP geolocation…');
     const primaryIp = dns.ipAddresses?.[0] ?? urlscan.ip ?? null;
     const geo = geoSvc.lookupGeo(primaryIp, urlscan);
+    recordCheck('geo', geo, 92, 'GeoIP lookup complete.');
 
     // ── Stage 6: Score + verdict ──────────────────────────────────────────
-    updateJob(jobId, { progress: 96, stage: 'Computing final verdict…' });
+    pushProgress(96, 'Computing final verdict…');
     const verdict = computeVerdict({
       ssl, whois, dns, headers,
       virustotal, safebrowsing, openphish,

@@ -19,12 +19,12 @@ const StatsDashboard = () => {
   const { ref, visible } = useScrollReveal();
 
   return (
-    <section id="statistics" className="py-24 px-6 bg-secondary/40" ref={ref}>
+    <section id="statistics" className="py-16 sm:py-24 px-4 sm:px-6 bg-secondary/40" ref={ref}>
       <div className="max-w-5xl mx-auto">
         <div className="text-center mb-14">
-          <span className="inline-block text-xs font-semibold tracking-widest uppercase text-primary mb-3 px-3 py-1 bg-primary/10 rounded-full">Real-time Data</span>
-          <h2 className="text-4xl font-black text-foreground mb-3">Live Statistics</h2>
-          <p className="text-muted-foreground text-lg">Real-time activity from the VisualVerifier network</p>
+          <span className="inline-block text-xs font-semibold tracking-widest uppercase text-primary mb-3 px-3 py-1 bg-primary/10 rounded-full">Operational Proof</span>
+          <h2 className="text-3xl sm:text-4xl font-bold text-foreground mb-3">Live Usage Signals</h2>
+          <p className="text-muted-foreground text-lg max-w-2xl mx-auto">A quick look at scanning throughput, block rates, and intelligence freshness.</p>
         </div>
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           {stats.map((s, i) => (
@@ -44,7 +44,7 @@ function StatCard({ label, target, sparkline, display, visible, delay }: {
   return (
     <div
       ref={ref}
-      className={`bg-white border border-border rounded-2xl p-5 transition-all duration-500 hover:shadow-sm ${
+      className={`bg-card border border-border rounded-2xl p-5 transition-all duration-500 hover:shadow-1 ${
         visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
       }`}
       style={{ transitionDelay: `${delay}ms` }}
@@ -54,7 +54,7 @@ function StatCard({ label, target, sparkline, display, visible, delay }: {
         {display || count.toLocaleString()}
       </div>
       <svg viewBox="0 0 50 24" className="w-full h-6 mt-3">
-        <path d={sparklinePaths[sparkline]} fill="none" stroke="hsl(var(--primary))" strokeWidth="1.5" opacity="0.5" />
+        <path d={sparklinePaths[sparkline]} fill="none" stroke={sparkline === 3 ? 'hsl(var(--accent))' : 'hsl(var(--primary))'} strokeWidth="1.5" opacity="0.65" />
       </svg>
     </div>
   );

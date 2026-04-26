@@ -153,6 +153,61 @@ const BRAND_MAP = {
     officialUrl: 'github.com',
     officialDomains: ['github.com', 'github.io', 'githubusercontent.com', 'githubassets.com'],
   },
+  youtube: {
+    name: 'YouTube',
+    officialUrl: 'youtube.com',
+    officialDomains: ['youtube.com', 'youtu.be', 'ytimg.com', 'youtube-nocookie.com', 'googlevideo.com'],
+  },
+  reddit: {
+    name: 'Reddit',
+    officialUrl: 'reddit.com',
+    officialDomains: ['reddit.com', 'redd.it', 'redditstatic.com', 'redditmedia.com'],
+  },
+  telegram: {
+    name: 'Telegram',
+    officialUrl: 'telegram.org',
+    officialDomains: ['telegram.org', 't.me', 'telegra.ph', 'telegram.me'],
+  },
+  discord: {
+    name: 'Discord',
+    officialUrl: 'discord.com',
+    officialDomains: ['discord.com', 'discord.gg', 'discordapp.com', 'discord.media'],
+  },
+  spotify: {
+    name: 'Spotify',
+    officialUrl: 'spotify.com',
+    officialDomains: ['spotify.com', 'scdn.co', 'spotifycdn.com'],
+  },
+  tiktok: {
+    name: 'TikTok',
+    officialUrl: 'tiktok.com',
+    officialDomains: ['tiktok.com', 'tiktokv.com', 'byteoversea.com', 'ibytedtos.com'],
+  },
+  zoom: {
+    name: 'Zoom',
+    officialUrl: 'zoom.us',
+    officialDomains: ['zoom.us', 'zoom.com', 'zoomgov.com'],
+  },
+  dropbox: {
+    name: 'Dropbox',
+    officialUrl: 'dropbox.com',
+    officialDomains: ['dropbox.com', 'dropboxusercontent.com', 'dropboxstatic.com', 'dropboxapi.com'],
+  },
+  adobe: {
+    name: 'Adobe',
+    officialUrl: 'adobe.com',
+    officialDomains: ['adobe.com', 'adobelogin.com', 'adobe.io', 'behance.net'],
+  },
+  canva: {
+    name: 'Canva',
+    officialUrl: 'canva.com',
+    officialDomains: ['canva.com', 'canva.site', 'canva-apps.com'],
+  },
+  yahoo: {
+    name: 'Yahoo',
+    officialUrl: 'yahoo.com',
+    officialDomains: ['yahoo.com', 'yahoo.co.jp', 'flickr.com', 'tumblr.com'],
+  },
 };
 
 /**
@@ -195,12 +250,19 @@ function detectBrand(domain) {
 function computeVerdict({ ssl, whois, dns, headers, virustotal, safebrowsing, openphish, urlscan, brand, visualHash = null }) {
   let score = 0;
   const riskFactors = [];
+  const isOfficialBrandDomain = !!(brand?.detected && brand?.isImpersonation === false);
 
   // ── VirusTotal ────────────────────────────────────────────────────────────
   if (!virustotal.error) {
-    if (virustotal.maliciousCount > 0) {
+    if (virustotal.maliciousCount >= 5) {
       score += 40;
       riskFactors.push(`Flagged as malicious by ${virustotal.maliciousCount} VirusTotal engine(s)`);
+    } else if (virustotal.maliciousCount >= 2) {
+      score += 20;
+      riskFactors.push(`Flagged as malicious by ${virustotal.maliciousCount} VirusTotal engine(s)`);
+    } else if (virustotal.maliciousCount === 1) {
+      score += isOfficialBrandDomain ? 5 : 10;
+      riskFactors.push('Single-engine VirusTotal detection (possible false positive)');
     } else if (virustotal.suspiciousCount > 0) {
       score += 20;
       riskFactors.push(`Flagged as suspicious by ${virustotal.suspiciousCount} VirusTotal engine(s)`);
@@ -286,6 +348,18 @@ function computeVerdict({ ssl, whois, dns, headers, virustotal, safebrowsing, op
 
   // Cap at 100
   score = Math.min(100, score);
+
+  // Official domains should not be marked suspicious by a single weak signal.
+  if (
+    isOfficialBrandDomain &&
+    score >= 40 &&
+    riskFactors.length <= 2 &&
+    !safebrowsing.isFlagged &&
+    !(openphish.inFeed) &&
+    !(urlscan.malicious)
+  ) {
+    score = Math.min(score, 19);
+  }
 
   // Determine verdict
   let label, color;

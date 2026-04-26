@@ -16,7 +16,7 @@ const BASE = 'https://urlscan.io/api/v1';
 const POLL_INTERVAL_MS = 3000;
 const MAX_RETRIES = 15;
 
-async function scan(url) {
+async function scan(url, onProgress = () => {}) {
   const apiKey = process.env.URLSCAN_API_KEY;
   if (!apiKey) {
     return { error: 'URLSCAN_API_KEY not configured', malicious: false, score: 0, categories: [], ip: null, country: null, asnName: null };
@@ -30,6 +30,13 @@ async function scan(url) {
       { headers: { 'API-Key': apiKey, 'Content-Type': 'application/json' }, timeout: 15000 }
     );
     uuid = submitRes.data.uuid;
+    onProgress({
+      phase: 'submitted',
+      stage: 'URLScan scan submitted…',
+      progress: 55,
+      attempt: 0,
+      maxRetries: MAX_RETRIES,
+    });
   } catch (err) {
     const msg = err.response?.data?.message || err.message;
     return { error: `URLScan submit failed: ${msg}`, malicious: false, score: 0, categories: [], ip: null, country: null, asnName: null };
@@ -37,6 +44,13 @@ async function scan(url) {
 
   // Poll for result
   for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
+    onProgress({
+      phase: 'polling',
+      stage: `URLScan polling ${attempt + 1}/${MAX_RETRIES}…`,
+      progress: 55 + Math.round(((attempt + 1) / MAX_RETRIES) * 20),
+      attempt: attempt + 1,
+      maxRetries: MAX_RETRIES,
+    });
     await sleep(POLL_INTERVAL_MS);
     try {
       const resultRes = await axios.get(`${BASE}/result/${uuid}/`, { timeout: 10000 });
@@ -65,6 +79,13 @@ async function scan(url) {
     }
   }
 
+  onProgress({
+    phase: 'timeout',
+    stage: 'URLScan timed out waiting for result…',
+    progress: 75,
+    attempt: MAX_RETRIES,
+    maxRetries: MAX_RETRIES,
+  });
   return { error: 'URLScan timed out waiting for result', malicious: false, score: 0, categories: [], ip: null, country: null, asnName: null };
 }
 
