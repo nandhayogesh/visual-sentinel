@@ -6,26 +6,35 @@
  * ASN/ISP data is derived from URLScan results where available.
  */
 
-const geoip = require('geoip-lite');
+// We have removed 'geoip-lite' because its internal >100MB database exceeds Vercel Serverless Function 50MB limits.
+// Instead, we derive GeoIP and ASN/ISP data efficiently from the URLScan results.
 
 function lookupGeo(ip, urlscanResult) {
   if (!ip) return null;
 
   try {
-    const geo = geoip.lookup(ip);
-    if (!geo) return null;
+    const countryStr = urlscanResult?.country;
+    const ispName = urlscanResult?.asnName ?? 'Unknown';
 
-    // Pull ISP/ASN from URLScan if available, otherwise mark as unknown
-    const isp = urlscanResult?.asnName ?? 'Unknown';
-    const asn = urlscanResult?.asnName ?? '';
+    // If urlscan lacks info, gracefully return unknown.
+    if (!countryStr && ispName === 'Unknown') {
+        return {
+          country: 'Unknown',
+          countryCode: 'Unknown',
+          city: 'Unknown',
+          isp: 'Unknown',
+          org: 'Unknown',
+          as: 'Unknown',
+        };
+    }
 
     return {
-      country: geo.country ? getCountryName(geo.country) : 'Unknown',
-      countryCode: geo.country ?? 'Unknown',
-      city: geo.city ?? 'Unknown',
-      isp,
-      org: isp,
-      as: asn,
+      country: countryStr ? getCountryName(countryStr) : 'Unknown',
+      countryCode: countryStr ?? 'Unknown',
+      city: 'Unknown', // URLscan doesn't provide city granularity reliably
+      isp: ispName,
+      org: ispName,
+      as: urlscanResult?.asnName ?? '',
     };
   } catch (_) {
     return null;
